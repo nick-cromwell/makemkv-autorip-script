@@ -1,0 +1,29 @@
+#!/bin/bash
+
+TEMP_DIR="/media/sdb/temp"
+OUTPUT_DIR="/media/sdb/Videos"
+MIN_LENGTH="3600"
+SOURCE_DRIVE="/dev/sr0"
+
+#Extract DVD Title from Drive
+DISK_TITLE=$(blkid -o value -s LABEL $SOURCE_DRIVE)
+
+#Replace Spaces with Underscores
+DISK_TITLE=${DISK_TITLE// /_}
+
+function rip_disk() {
+	date
+        makemkvcon mkv --debug --minlength=$MIN_LENGTH disc:0 all $TEMP_DIR/$DISK_TITLE
+	mv $TEMP_DIR/$DISK_TITLE $OUTPUT_DIR
+        eject $SOURCE_DRIVE
+	date
+}
+
+if [ ! -d "$OUTPUT_DIR/$DISK_TITLE" ]
+then
+	mkdir $TEMP_DIR/$DISK_TITLE
+	rip_disk > $TEMP_DIR/$DISK_TITLE.log
+else
+	echo "$OUTPUT_DIR/$DISK_TITLE already exists!" > $TEMP_DIR/$DISK_TITLE.exists
+        eject $SOURCE_DRIVE
+fi
